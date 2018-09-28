@@ -1,6 +1,7 @@
 ﻿更新日志：
-GTASuperESCv4.9   2018/09/
+GTASuperESCv4.9   2018/09/28
 新增 支持NAT-PMP端口映射
+解决 部分用户UPnP创建失败无法自动创建房间
 
 GTASuperESCv4.7   2018/09/28
 优化 降低测试延时的耗时
