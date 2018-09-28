@@ -5,7 +5,7 @@
 软件引用了以下模块：  
 精易模块 (源码：http://ec.125.la)  
 WebSocketClient (源码：https://bbs.125.la/thread-14039123-1-1.html)  
-传输封包=文本_加密c(<body><hash>时间!随机数</hash>传输内容</body><md5>body标签内(包含标签)的MD5</md5>)  
+传输封包='文本_加密c(<body><hash>时间!随机数</hash>传输内容</body><md5>body标签内(包含标签)的MD5</md5>)'  
 自动/手动创建房间，使用UDP或TCP传输时都是直接发送传输封包，加密后是字节集类型，不需要转换  
 WebSocket是使用workerman-chat聊天室，发送内容就像这样：  
 {"type":"say","to_client_id":"all","to_client_name":"所有人","content":"Base64编码(传输封包)"}  
