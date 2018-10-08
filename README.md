@@ -13,6 +13,7 @@ UPnP (源码：http://www.pudn.com/Download/item/id/2523129.html)
 自动/手动创建房间，使用UDP或TCP传输时都是直接发送传输封包，加密后是字节集类型，不需要转换  
 WebSocket是使用workerman-chat聊天室，发送内容就像这样：  
 ```{"type":"say","to_client_id":"all","to_client_name":"所有人","content":"Base64编码(传输封包)"}```  
+一键创建房间的房间号：```?昵称!密码```，普通(手动创建)房间号：```地址:端口!密码```，自动创建房间号：```#混淆并Base64编码后的普通房间号```  
   
 One key ends the process or breaks the network, supports the multi person on-line one person key, many people end the process together or break the net. When playing with GTA5's "God of Crime" achievement, someone dies and pushes the button quickly. Four people end the GTA5 process together. Data will not be uploaded, progress will not be reset, and no need to do it from scratch.  
 The software is written in "易语言"(Easy Language) and supports TCP/UDP transmission. The server can automatically create a mapping through UPnP. One key automatically creates the server and detects whether it is valid. The transmission process is encrypted simply. The anti-replay and heartbeat packets ensure the reliability of the transmission. The software supports multiple processes. If the end process fails, it will be terminated by taskkill. Net mode is to disable network card.  
