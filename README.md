@@ -1,7 +1,7 @@
 # GTASuperESC
-![下载地址](https://wgzeyu.github.io/GTASuperESC/img/releases.jpg)  
-点上方的releases可以下载  
 一键结束进程或断网，支持多人联机一人按键一起结束进程或断网，GTA5做首脑时用的，有人死了一人按键一起结束进程，数据不会上传，进度不会重置，不需要从头做  
+  
+# 官网：https://gtasuperesc.gtxcn.com  
   
 软件引用了以下模块：  
 精易模块 (源码：http://ec.125.la)  
