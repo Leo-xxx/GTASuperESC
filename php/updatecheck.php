@@ -2,6 +2,10 @@
 //第一次写PHP
 $filename = "updatecheck.txt";
 $nowver = $_POST["ver"];
+if(!$nowver)
+{
+	$nowver = $_GET["ver"];
+}
 $file = base64_decode(getSubstr(file_get_contents($filename),"<base64>","</base64>"));
 $newver = getSubstr($file,"<ver>","</ver>");
 $txtecho = $txtecho.=getSubstr($file,"<head>","</head>");
