@@ -25,7 +25,7 @@
 
 .子程序 __启动窗口_创建完毕
 
-当前版本 ＝ 55
+当前版本 ＝ 56
 保存周期 ＝ 2000
 心跳包周期 ＝ 5000
 调试输出 (取系统语言 (), 取系统语言2 ())
@@ -49,6 +49,32 @@
 
 .如果真结束
 
+
+.子程序 取进程路径, 文本型
+.参数 pid
+.局部变量 hp
+.局部变量 name, 文本型
+.局部变量 pan, 文本型
+.局部变量 i, 整数型
+.局部变量 Dpan, 文本型
+
+name ＝ 取空白文本 (260)
+Dpan ＝ 取空白文本 (250)
+hp ＝ OpenProcess (位异或 (1024, 16), 0, pid)
+.如果真 (hp ＝ 0)
+    返回 (“”)
+.如果真结束
+GetProcessImageFileNameA (hp, name, 260)
+.计次循环首 (26, i)
+    pan ＝ 字符 (64 ＋ i) ＋ “:”
+    QueryDosDevice (pan, Dpan, 250)
+    .如果真 (寻找文本 (name, Dpan, , 假) ≠ -1)
+        name ＝ 子文本替换 (name, Dpan, pan, , , 真)
+        返回 (name)
+    .如果真结束
+
+.计次循环尾 ()
+返回 (name)
 
 .子程序 测试WS服务器延迟快
 .局部变量 已次数, 整数型
@@ -310,6 +336,7 @@
 按钮3.标题 ＝ “Introduction”
 按钮3.字体.字体大小 ＝ 7
 按钮5.标题 ＝ “Send”
+选择框7.标题 ＝ “Process disconnected”
 标签6.是否自动折行 ＝ 真
 标签6.高度 ＝ 30
 
@@ -350,6 +377,7 @@
 按钮11.标题 ＝ 编码互转 (按钮11.标题)
 按钮3.标题 ＝ 编码互转 (按钮3.标题)
 按钮5.标题 ＝ 编码互转 (按钮5.标题)
+选择框7.标题 ＝ 编码互转 (选择框7.标题)
 标签6.是否自动折行 ＝ 假
 标签6.高度 ＝ 24
 
@@ -409,6 +437,53 @@
 .如果结束
 
 
+.子程序 进程断网
+.参数 断网进程名称, 文本型
+.局部变量 进程的路径, 文本型
+.局部变量 进程的ID, 整数型
+
+进程的ID ＝ 进程_名取ID (断网进程名称)
+进程的路径 ＝ 取进程路径 (进程的ID)
+.如果 (进程的ID ＝ 0)
+    .如果 (是否中文系统)
+        输出文本 (断网进程名称 ＋ “未运行，无法断网”, 真, 真)
+    .否则
+        输出文本 (断网进程名称 ＋ “ is not running, can not perform network disconnection”, 真, 真)
+    .如果结束
+    返回 ()
+.否则
+    .如果真 (进程的路径 ＝ “”)
+        进程的路径 ＝ 进程_取程序路径 (进程的ID)
+    .如果真结束
+    .如果真 (进程的路径 ＝ “”)
+        .如果 (是否中文系统)
+            输出文本 (“错误：无法获取到进程路径”, 真, 真)
+        .否则
+            输出文本 (“Error: Unable to get process path”, 真, 真)
+        .如果结束
+        返回 ()
+    .如果真结束
+    调试输出 (“进程路径”, 进程的路径)
+    运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC block program network” ＋ #引号 ＋ “ dir=out program=” ＋ #引号 ＋ 进程的路径 ＋ #引号 ＋ “ action=block enable=yes”, 假, 1)
+    .如果 (是否中文系统)
+        输出文本 (“已断开” ＋ 断网进程名称 ＋ “的网络”, 真, 真)
+    .否则
+        输出文本 (“The network of ” ＋ 断网进程名称 ＋ “ has been disconnected”, 真, 真)
+    .如果结束
+
+.如果结束
+
+
+.子程序 恢复进程断网
+
+运行 (“netsh advfirewall firewall delete rule name=” ＋ #引号 ＋ “GTASuperESC block program network” ＋ #引号, 假, 6)
+.如果 (是否中文系统)
+    输出文本 (“已取消进程断网”, 真, 真)
+.否则
+    输出文本 (“Network disconnection of process has been canceled”, 真, 真)
+.如果结束
+
+
 .子程序 __启动窗口_首次激活
 .局部变量 读取内容, 文本型
 .局部变量 已次数, 整数型
@@ -443,13 +518,15 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
 
 .否则
     .如果 (是否中文系统)
-        标签6.标题 ＝ 转换编码 (“右键以管理员权限运行本软件才能使用禁用网卡功能”)
+        标签6.标题 ＝ 转换编码 (“右键以管理员权限运行本软件才能使用断网相关功能”)
     .否则
-        标签6.标题 ＝ “Right click to run with administrator privileges to use the disable network card function.”
+        标签6.标题 ＝ “Right click the administrator to run the software to use the network disconnect function.”
     .如果结束
     标签6.宽度 ＝ 280
     选择框3.禁止 ＝ 真
     组合框3.禁止 ＝ 真
+    选择框7.禁止 ＝ 真
+    编辑框7.禁止 ＝ 真
 .如果结束
 .如果真 (是否多开 ())
     .如果 (是否中文系统)
@@ -462,7 +539,7 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
 检测断网选中 ()
 .如果真 (文件是否存在 (取运行目录 () ＋ “\” ＋ 取机器码 () ＋ “.ini”) ＝ 假)
     载入 (教程窗口, _启动窗口, 假)
-    保存设置 (到整数 (编辑框3.内容), 组合框1.现行选中项, 组合框2.现行选中项, 选择框1.选中, 编辑框6.内容, 选择框2.选中, 选择框3.选中, 编辑框5.内容, 选择框5.选中, 选择框6.选中, 组合框4.现行选中项)
+    保存设置 (到整数 (编辑框3.内容), 组合框1.现行选中项, 组合框2.现行选中项, 选择框1.选中, 编辑框6.内容, 选择框2.选中, 选择框3.选中, 编辑框5.内容, 选择框5.选中, 选择框6.选中, 组合框4.现行选中项, 编辑框7.内容, 选择框7.选中)
 .如果真结束
 
 
@@ -514,6 +591,8 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
 .参数 TCP传输a, 逻辑型
 .参数 UDP传输a, 逻辑型
 .参数 系统语言a, 整数型
+.参数 进程断网进程a, 文本型
+.参数 进程断网选中a, 逻辑型
 .局部变量 保存信息, 文本型
 .局部变量 信息数组, 文本型, , "0"
 .局部变量 模板数组, 文本型, , "0"
@@ -532,8 +611,10 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
 保存信息 ＝ 保存信息 ＋ 到文本 (TCP传输a) ＋ “</*内容*/>” ＋ #换行符
 保存信息 ＝ 保存信息 ＋ 到文本 (UDP传输a) ＋ “</*内容*/>” ＋ #换行符
 保存信息 ＝ 保存信息 ＋ 到文本 (系统语言a) ＋ “</*内容*/>” ＋ #换行符
+保存信息 ＝ 保存信息 ＋ 到文本 (进程断网进程a) ＋ “</*内容*/>” ＋ #换行符
+保存信息 ＝ 保存信息 ＋ 到文本 (进程断网选中a) ＋ “</*内容*/>” ＋ #换行符
 信息数组 ＝ 分割文本 (保存信息, #换行符, )
-模板数组 ＝ 分割文本 (“端口号,功能键,快捷键,长密码,进程名,进程选中,网卡选中,昵称,TCP传输,UDP传输,系统语言”, “,”, )
+模板数组 ＝ 分割文本 (“端口号,功能键,快捷键,长密码,进程名,进程选中,网卡选中,昵称,TCP传输,UDP传输,系统语言,进程断网进程,进程断网选中”, “,”, )
 .如果真 (取数组成员数 (信息数组) ≠ 取数组成员数 (模板数组))
     .如果 (是否中文系统)
         信息框 (转换编码 (“内部错误：” ＋ #换行符 ＋ “设置模板数量与设置项目不匹配，” ＋ #换行符 ＋ “无法保存设置！”), 16, , )
@@ -571,9 +652,11 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
 编辑框6.内容 ＝ 到文本 (取出设置 (全配置, “进程名”, “GTA5.exe”))
 选择框2.选中 ＝ 到逻辑型 (取出设置 (全配置, “进程选中”, “真”))
 选择框3.选中 ＝ 到逻辑型 (取出设置 (全配置, “网卡选中”, “假”))
-编辑框5.内容 ＝ 到文本 (取出设置 (全配置, “昵称”))
+编辑框5.内容 ＝ 到文本 (取出设置 (全配置, “昵称”, “消息”))
 选择框5.选中 ＝ 到逻辑型 (取出设置 (全配置, “TCP传输”, “真”))
 选择框6.选中 ＝ 到逻辑型 (取出设置 (全配置, “UDP传输”, “真”))
+选择框7.选中 ＝ 到逻辑型 (取出设置 (全配置, “进程断网选中”, “假”))
+编辑框7.内容 ＝ 到文本 (取出设置 (全配置, “进程断网进程”, “GTA5.exe”))
 组合框4.现行选中项 ＝ 到整数 (取出设置 (全配置, “系统语言”, 到文本 (取系统语言2 ())))
 .如果 (组合框4.现行选中项 ≠ 0)
     _组合框4_列表项被选择 ()
@@ -1482,6 +1565,14 @@ UPnP创建结果 ＝ 100
 
     .计次循环尾 ()
 .如果真结束
+.如果真 (选择框7.选中 且 选择框7.禁止 ＝ 假)
+    .如果 (是否中文系统)
+        输出文本 (“干掉GTA:开始执行进程断网”, 真, 真)
+    .否则
+        输出文本 (“Kill GTA:Start disconnecting the process's network”, 真, 真)
+    .如果结束
+    进程断网 (编辑框7.内容)
+.如果真结束
 .如果真 (按钮2.禁止 且 是否广播)
     .如果 (继续接收ID ≠ 0)
         此次发送数据 ＝ 封装数据 (“KILLGTA”, 加密秘钥)
@@ -1505,13 +1596,12 @@ UPnP创建结果 ＝ 100
     .如果真 (按钮2.禁止 且 是否广播 且 是否关闭服务器 ＝ 假)
         程序_延时 (400)
     .如果真结束
-    运行 (“netsh interface set interface ” ＋ #引号 ＋ 组合框3.内容 ＋ #引号 ＋ “ disabled”, 假, 3)
     .如果 (是否中文系统)
-        输出文本 (“干掉GTA:已禁用” ＋ 组合框3.取项目文本 (组合框3.现行选中项), 真, 真)
+        输出文本 (“干掉GTA:开始执行禁用网卡”, 真, 真)
     .否则
-        输出文本 (“Kill GTA:” ＋ 组合框3.取项目文本 (组合框3.现行选中项) ＋ “ is disabled”, 真, 真)
+        输出文本 (“Kill GTA:Start executing the disabled network card”, 真, 真)
     .如果结束
-
+    禁用网卡 ()
 .如果真结束
 
 
@@ -1627,6 +1717,12 @@ UDP数据报.关闭 ()
 .如果真 (UDP许可证 ≠ 0)
     删除进入许可证 (UDP许可证)
 .如果真结束
+.如果真 (选择框3.选中 ＝ 真 且 选择框3.禁止 ＝ 假)
+    启用网卡 ()
+.如果真结束
+.如果真 (选择框7.选中 ＝ 真 且 选择框7.禁止 ＝ 假)
+    恢复进程断网 ()
+.如果真结束
 
 
 .子程序 _按钮12_被单击
@@ -1661,6 +1757,7 @@ UDP数据报.关闭 ()
         输出文本 (“ ”, 假, 真)
         输出文本 (“一键创建房间(连接服务器)成功，”, 真, 真)
         输出文本 (“房间号：” ＋ 公网房间号, 假, 真)
+        输出文本 (“已复制房间号到剪辑板,直接粘贴发送给对方就可以了!”, 假, 真)
         输出文本 (“已复制房间号到剪辑板,直接粘贴发送给对方就可以了!”, 假, 真)
         输出文本 (“已复制房间号到剪辑板,直接粘贴发送给对方就可以了!”, 假, 真)
         输出文本 (“已复制房间号到剪辑板,直接粘贴发送给对方就可以了!”, 假, 真)
@@ -2559,17 +2656,65 @@ WinVer ＝ 取字节集数据 (Bin, #短整数型, )
 
 .子程序 _按钮9_被单击
 
-运行 (“netsh interface set interface ” ＋ #引号 ＋ 组合框3.内容 ＋ #引号 ＋ “ disabled”, 假, 3)
+.如果真 (选择框3.选中)
+    禁用网卡 ()
+.如果真结束
+.如果真 (选择框7.选中)
+    进程断网 (编辑框7.内容)
+.如果真结束
+.如果真 (选择框3.选中 ＝ 假 且 选择框7.选中 ＝ 假)
+    .如果 (是否中文系统)
+        输出文本 (“请选择禁用网卡或进程断网后再执行操作”, 真, 真)
+    .否则
+        输出文本 (“Please choose to disable the network card or the process is disconnected before performing the operation.”, 真, 真)
+    .如果结束
+
+.如果真结束
+
+
+.子程序 禁用网卡
+
+运行 (“netsh interface set interface ” ＋ #引号 ＋ 组合框3.内容 ＋ #引号 ＋ “ disabled”, 假, 1)
+.如果 (是否中文系统)
+    输出文本 (“已禁用” ＋ 组合框3.内容, 真, 真)
+.否则
+    输出文本 (组合框3.内容 ＋ “ is disabled”, 真, 真)
+.如果结束
+
+
+.子程序 启用网卡
+
+运行 (“netsh interface set interface ” ＋ #引号 ＋ 组合框3.内容 ＋ #引号 ＋ “ enabled”, 假, 6)
+.如果 (是否中文系统)
+    输出文本 (“已启用” ＋ 组合框3.内容, 真, 真)
+.否则
+    输出文本 (组合框3.内容 ＋ “ is enabled”, 真, 真)
+.如果结束
+
 
 .子程序 _按钮10_被单击
 
-运行 (“netsh interface set interface ” ＋ #引号 ＋ 组合框3.内容 ＋ #引号 ＋ “ enabled”, 假, 3)
+.如果真 (选择框3.选中)
+    启用网卡 ()
+.如果真结束
+.如果真 (选择框7.选中)
+    恢复进程断网 ()
+.如果真结束
+.如果真 (选择框3.选中 ＝ 假 且 选择框7.选中 ＝ 假)
+    .如果 (是否中文系统)
+        输出文本 (“请选择禁用网卡或进程断网后再执行操作”, 真, 真)
+    .否则
+        输出文本 (“Please choose to disable the network card or the process is disconnected before performing the operation.”, 真, 真)
+    .如果结束
+
+.如果真结束
+
 
 .子程序 _选择框3_被单击
 
 .如果真 (选择框3.选中)
     .如果 (是否中文系统)
-        输出文本 (#换行符 ＋ “提示：断网速度没有结束进程快，可能会延迟个0.6秒左右才断网，建议还是使用结束进程，另外不建议高延迟联机使用断网，以及强烈不建议自动或手动创建房间的房主使用断网”)
+        输出文本 (#换行符 ＋ “提示：断网速度没有结束进程快，可能会延迟0.5秒左右才断网，还是建议使用结束进程或进程断网，另外不建议高延迟联机使用断网，以及强烈不建议自动或手动创建房间的房主使用断网”)
     .否则
         输出文本 (#换行符 ＋ “Tip: Disabling the speed of the network card does not end the process fast, it may delay 0.6 seconds or so before disabling the network card. It is recommended to use the end process. It is not recommended that the GTASuperESC server use the banned network card.”)
     .如果结束
@@ -2595,7 +2740,7 @@ WinVer ＝ 取字节集数据 (Bin, #短整数型, )
 .子程序 _保存设置_周期事件
 
 保存设置.时钟周期 ＝ 0
-.如果 (保存设置 (到整数 (编辑框3.内容), 组合框1.现行选中项, 组合框2.现行选中项, 选择框1.选中, 编辑框6.内容, 选择框2.选中, 选择框3.选中, 编辑框5.内容, 选择框5.选中, 选择框6.选中, 组合框4.现行选中项))
+.如果 (保存设置 (到整数 (编辑框3.内容), 组合框1.现行选中项, 组合框2.现行选中项, 选择框1.选中, 编辑框6.内容, 选择框2.选中, 选择框3.选中, 编辑框5.内容, 选择框5.选中, 选择框6.选中, 组合框4.现行选中项, 编辑框7.内容, 选择框7.选中))
     .如果真 (是否检测中 ＝ 假)
         .如果 (是否中文系统)
             输出文本 (“保存设置成功”, 真, 真)
@@ -2803,24 +2948,51 @@ ping时钟.时钟周期 ＝ 10000
 .子程序 _按钮11_被单击
 .局部变量 信息框返回, 整数型
 
-.如果 (是否中文系统)
-    信息框返回 ＝ 信息框 (转换编码 (“原理:暂停GTA进程10秒后恢复” ＋ #换行符 ＋ “GTA5是运行在窗口模式吗？” ＋ #换行符 ＋ “窗口点是 全屏点否”), #取消是否钮 ＋ #询问图标, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
-.否则
-    信息框返回 ＝ 信息框 (“Let GTAOnline run in a public battle with only one person” ＋ #换行符 ＋ “Principle: Suspend the GTA process to recover after 10 seconds” ＋ #换行符 ＋ “Is GTA5 running in window mode?” ＋ #换行符 ＋ “Window point yes,full screen point no”, #取消是否钮 ＋ #询问图标, “GTA single public war situation”, _启动窗口)
-.如果结束
-.如果真 (信息框返回 ＝ #取消钮)
+.如果真 (按钮11.标题 ＝ 转换编码 (“GTA卡单人”) 或 按钮11.标题 ＝ “Stuck single”)
+    .如果 (选择框3.禁止 ＝ 真)
+        .如果 (是否中文系统)
+            信息框返回 ＝ 信息框 (转换编码 (“当前使用卡单人，如需使用防火墙规则” ＋ #换行符 ＋ “永久单人请右键以管理员权限运行本软件” ＋ #换行符 ＋ “原理：暂停GTA进程10秒后恢复” ＋ #换行符 ＋ “GTA5是运行在窗口模式吗？” ＋ #换行符 ＋ “窗口点是 全屏点否”), #取消是否钮 ＋ #询问图标, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
+        .否则
+            信息框返回 ＝ 信息框 (“Let GTAOnline run in a public battle with only one person” ＋ #换行符 ＋ “Principle: Suspend the GTA process to recover after 10 seconds” ＋ #换行符 ＋ “Is GTA5 running in window mode?” ＋ #换行符 ＋ “Window point yes,full screen point no”, #取消是否钮 ＋ #询问图标, “GTA single public war situation”, _启动窗口)
+        .如果结束
+        .如果真 (信息框返回 ＝ #取消钮)
+            返回 ()
+        .如果真结束
+        .如果真 (信息框返回 ＝ #是钮)
+            启动线程 (&卡单人线程, 0, )
+        .如果真结束
+        .如果真 (信息框返回 ＝ #否钮)
+            .如果 (是否中文系统)
+                信息框 (转换编码 (“请在点击确定之后，立刻切换回GTA5” ＋ #换行符 ＋ “软件将在8秒后暂停GTA5进程10秒” ＋ #换行符 ＋ “GTA5进程恢复之前不要返回桌面”), #确认钮, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
+            .否则
+                信息框 (“Please switch back to GTA5 immediately after clicking OK” ＋ #换行符 ＋ “will pause the GTA5 process for 10 seconds after 8 seconds” ＋ #换行符 ＋ “do not return to the desktop before the GTA5 process is restored”, #确认钮, “GTA single public war situation”, _启动窗口)
+            .如果结束
+            启动线程 (&卡单人线程, 1, )
+        .如果真结束
+
+    .否则
+        运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=out profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes”, 假, 6)
+        .如果 (是否中文系统)
+            输出文本 (“已添加防火墙规则禁止战局连接”, 真, 真)
+            按钮11.标题 ＝ 转换编码 (“恢复公开”)
+        .否则
+            输出文本 (“Firewall rules have been added to prohibit war connection”, 真, 真)
+            按钮11.标题 ＝ “recover”
+        .如果结束
+
+    .如果结束
     返回 ()
 .如果真结束
-.如果真 (信息框返回 ＝ #是钮)
-    启动线程 (&卡单人线程, 0, )
-.如果真结束
-.如果真 (信息框返回 ＝ #否钮)
+.如果真 (按钮11.标题 ＝ 转换编码 (“恢复公开”) 或 按钮11.标题 ＝ “recover”)
+    运行 (“netsh advfirewall firewall delete rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号, 假, 6)
     .如果 (是否中文系统)
-        信息框 (转换编码 (“请在点击确定之后，立刻切换回GTA5” ＋ #换行符 ＋ “软件将在8秒后暂停GTA5进程10秒” ＋ #换行符 ＋ “GTA5进程恢复之前不要返回桌面”), #确认钮, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
+        输出文本 (“已删除相关防火墙规则”, 真, 真)
+        按钮11.标题 ＝ 转换编码 (“GTA卡单人”)
     .否则
-        信息框 (“Please switch back to GTA5 immediately after clicking OK” ＋ #换行符 ＋ “will pause the GTA5 process for 10 seconds after 8 seconds” ＋ #换行符 ＋ “do not return to the desktop before the GTA5 process is restored”, #确认钮, “GTA single public war situation”, _启动窗口)
+        输出文本 (“Related firewall rules have been removed”, 真, 真)
+        按钮11.标题 ＝ “Stuck single”
     .如果结束
-    启动线程 (&卡单人线程, 1, )
+
 .如果真结束
 
 
@@ -3458,6 +3630,22 @@ ws.Send (真, #OPCODE_TEXT, 真, 编码_Ansi到Utf8_2 (引号替换 (“{'type':
 
 .如果真结束
 
+
+.子程序 _选择框7_被单击
+
+.如果真 (选择框7.选中)
+    .如果 (是否中文系统)
+        输出文本 (“建议先在游戏中测试进程断网确认有效再使用”, 真, 真)
+    .否则
+        输出文本 (“It is recommended to test the process disconnection function first, and then use it after confirming the validity.”, 真, 真)
+    .如果结束
+
+.如果真结束
+触发保存 ()
+
+.子程序 _编辑框7_内容被改变
+
+触发保存 ()
 .版本 2
 
 .程序集 窗口程序集_窗口1
@@ -3734,6 +3922,16 @@ ws.Send (真, #OPCODE_TEXT, 真, 编码_Ansi到Utf8_2 (引号替换 (“{'type':
     .参数 lpWSAData, WSADATA, , _Out_ LPWSADATA lpWSAData
 
 .DLL命令 WSACleanup, 整数型, "ws2_32.dll", "WSACleanup", 公开, int  WSACleanup 卸载Winsocket服务 成功返回0
+
+.DLL命令 QueryDosDevice, 整数型, "kernel32", "QueryDosDeviceA", , , 在Windows NT中，DOS设备名会映射成NT系统设备名。该函数可判断当前的设备映射情况  零表示出错。如执行成功，返回保存到lpTargetPath的字符数。会设置GetLastError
+    .参数 lpDeviceName, 文本型, , 如果是vbNull，那么lpTargetPath会载入当前映射的MS-DOS名称的一个列表。如果是个MS-DOS名，则lpTargetPath会载入一个设备映射列表（第一个名字是活动映射，后续的名字是以前尚未删掉的映射）
+    .参数 lpTargetPath, 文本型, , 名称列表，具体取决于lpDeviceName参数。这些名字用NULL字符分隔。列表最后用两个连续的NULL字符中止
+    .参数 ucchMax, 整数型, , lpTargetPath缓冲区的大小  适用平台Windows NT;
+
+.DLL命令 GetProcessImageFileNameA, 整数型, "psapi.dll"
+    .参数 hp
+    .参数 pn, 文本型
+    .参数 lp
 
 .DLL命令 GetSystemDefaultLCID, 整数型, "kernel32", "GetSystemDefaultLCID"
 .版本 2
