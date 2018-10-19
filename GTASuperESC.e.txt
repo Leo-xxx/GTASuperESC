@@ -25,7 +25,7 @@
 
 .子程序 __启动窗口_创建完毕
 
-当前版本 ＝ 56
+当前版本 ＝ 57
 保存周期 ＝ 2000
 心跳包周期 ＝ 5000
 调试输出 (取系统语言 (), 取系统语言2 ())
@@ -466,7 +466,8 @@ GetProcessImageFileNameA (hp, name, 260)
     调试输出 (“进程路径”, 进程的路径)
     运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC block program network” ＋ #引号 ＋ “ dir=out program=” ＋ #引号 ＋ 进程的路径 ＋ #引号 ＋ “ action=block enable=yes”, 假, 1)
     .如果 (是否中文系统)
-        输出文本 (“已断开” ＋ 断网进程名称 ＋ “的网络”, 真, 真)
+        输出文本 (“进程断网:已断开” ＋ 断网进程名称 ＋ “的网络”, 真, 真)
+        输出文本 (“请在彻底掉线或退出游戏后再恢复网络，不然恢复后会保存成功”, 假, 真)
     .否则
         输出文本 (“The network of ” ＋ 断网进程名称 ＋ “ has been disconnected”, 真, 真)
     .如果结束
@@ -515,6 +516,13 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
         .如果结束
 
     .如果结束
+    .如果 (是否中文系统)
+        输出文本 (“当前为管理员权限运行，点击右下角的GTA锁单人可使”, 假, 真)
+        输出文本 (“用防火墙锁单人公开战局，支持给好友添加白名单！”, 假, 真)
+        按钮11.标题 ＝ 转换编码 (“GTA锁单人”)
+    .否则
+        输出文本 (“Currently running for administrator privileges, you can use the network disconnection and firewall lock GTA5 single public war situation”, 真, 真)
+    .如果结束
 
 .否则
     .如果 (是否中文系统)
@@ -527,6 +535,14 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
     组合框3.禁止 ＝ 真
     选择框7.禁止 ＝ 真
     编辑框7.禁止 ＝ 真
+    .如果 (是否中文系统)
+        输出文本 (“当前软件没有管理员权限，按键后操作就只有结束进程”, 假, 真)
+        输出文本 (“如需使用断网或防火墙锁单人公开战局(支持白名单)，”, 假, 真)
+        输出文本 (“请关闭软件后右键” ＋ #引号 ＋ “以管理员身份运行” ＋ #引号 ＋ “来重新打开软件”, 假, 真)
+    .否则
+        输出文本 (“The current software does not have administrator rights. After the button is pressed, the operation only ends the process. If you need to use a broken network or a firewall to lock a single public battle (support whitelist), Please close the software and right click Run as administrator to re-open the software.”, 真, 真)
+    .如果结束
+
 .如果结束
 .如果真 (是否多开 ())
     .如果 (是否中文系统)
@@ -1655,7 +1671,7 @@ UDP许可证 ＝ 创建进入许可证 ()
 UDP数据报_创建 (26576)
 房间号 ＝ “#” ＋ 编码_BASE64编码 (文本_加密c (房间号, “O42xiMVordM72pvE”))
 .如果 (是否中文系统)
-    置剪辑板文本 (“打开GTASuperESC，输入以下房间号点加入房间即可：” ＋ #换行符 ＋ 房间号 ＋ #换行符 ＋ “复制时别漏字，少一个或多一个字符都会无法连接！”)
+    置剪辑板文本 (“打开GTASuperESC，输入以下房间号点加入房间即可：” ＋ #换行符 ＋ 房间号 ＋ #换行符 ＋ “复制时别漏字，少一个或多一个字符都会无法连接！” ＋ #换行符 ＋ “”)
     输出文本 (“ ”, 假, 真)
     输出文本 (“已成功自动创建房间(服务器)，”, 真, 真)
     输出文本 (#换行符 ＋ “内网房间号：” ＋ 内网房间号)
@@ -1931,6 +1947,17 @@ UDP超时检测.时钟周期 ＝ 1000
         更新延迟显示 ()
     .如果真结束
     ping时钟.时钟周期 ＝ 0
+    返回 ()
+.如果真结束
+.如果真 (内容 ＝ “GETIP”)
+    .如果真 (外网IP ＝ “”)
+        外网IP ＝ 取外网IP (真)
+    .如果真结束
+    发送数据 (封装数据 (“MyIP: ” ＋ 编码_BASE64编码 (文本_加密c (外网IP, “OCnT2odq”)), 加密秘钥))
+    返回 ()
+.如果真结束
+.如果真 (取文本左边 (内容, 6) ＝ “MyIP: ”)
+    添加队友IP (文本_解密c (编码_BASE64解码 (文本_取出中间文本 (内容 ＋ “</END>”, “MyIP: ”, “</END>”)), “OCnT2odq”))
     返回 ()
 .如果真结束
 .如果真 (内容 ＝ “上个数据为检测PING发出，但服务器版本过低，不支持，建议房主更新软件”)
@@ -2947,11 +2974,14 @@ ping时钟.时钟周期 ＝ 10000
 
 .子程序 _按钮11_被单击
 .局部变量 信息框返回, 整数型
+.局部变量 全部对方IP, 文本型
+.局部变量 已次数, 整数型
+.局部变量 剪辑版添加数量, 整数型
 
-.如果真 (按钮11.标题 ＝ 转换编码 (“GTA卡单人”) 或 按钮11.标题 ＝ “Stuck single”)
+.如果真 (按钮11.标题 ＝ 转换编码 (“GTA锁单人”) 或 按钮11.标题 ＝ 转换编码 (“GTA卡单人”) 或 按钮11.标题 ＝ “Stuck single”)
     .如果 (选择框3.禁止 ＝ 真)
         .如果 (是否中文系统)
-            信息框返回 ＝ 信息框 (转换编码 (“当前使用卡单人，如需使用防火墙规则” ＋ #换行符 ＋ “永久单人请右键以管理员权限运行本软件” ＋ #换行符 ＋ “原理：暂停GTA进程10秒后恢复” ＋ #换行符 ＋ “GTA5是运行在窗口模式吗？” ＋ #换行符 ＋ “窗口点是 全屏点否”), #取消是否钮 ＋ #询问图标, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
+            信息框返回 ＝ 信息框 (转换编码 (“当前使用卡单人，如需使用防火墙规则” ＋ #换行符 ＋ “锁单人请右键以管理员身份运行本软件” ＋ #换行符 ＋ “原理：暂停GTA进程10秒后恢复” ＋ #换行符 ＋ “GTA5是运行在窗口模式吗？” ＋ #换行符 ＋ “窗口点是 全屏点否”), #取消是否钮 ＋ #询问图标, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
         .否则
             信息框返回 ＝ 信息框 (“Let GTAOnline run in a public battle with only one person” ＋ #换行符 ＋ “Principle: Suspend the GTA process to recover after 10 seconds” ＋ #换行符 ＋ “Is GTA5 running in window mode?” ＋ #换行符 ＋ “Window point yes,full screen point no”, #取消是否钮 ＋ #询问图标, “GTA single public war situation”, _启动窗口)
         .如果结束
@@ -2971,13 +3001,71 @@ ping时钟.时钟周期 ＝ 10000
         .如果真结束
 
     .否则
-        运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=out profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes”, 假, 6)
+        .如果 (是否中文系统)
+            输出文本 (“添加白名单让好友进来的两种方法：”, 假, 真)
+            输出文本 (“1.复制对方IP后再锁单人(多个IP请用换行或逗号分开)”, 假, 真)
+            输出文本 (“  Home菜单-设置-网络信息里查看IP，应该支持加速器”, 假, 真)
+            输出文本 (“2.用本软件最新版联机后再锁单人(可能不支持加速器)”, 假, 真)
+            输出文本 (“(加速器是指的对方开的,没测试过自己开加速器锁单人)”, 假, 真)
+        .否则
+            输出文本 (“Add a whitelist to let friends come in two ways: 1. Copy the other party's IP and then click stuck single (multiple IPs are separated by a newline or comma); 2. The other party uses the software to connect with you and then click single”, 真, 真)
+        .如果结束
+        .如果真 (按钮2.禁止 ＝ 真)
+            .如果真 (外网IP ＝ “”)
+                外网IP ＝ 取外网IP (真)
+            .如果真结束
+            .如果 (是否中文系统)
+                输出文本 (“正在获取本软件房间内其他人的IP”, 真, 真)
+            .否则
+                输出文本 (“Getting friend IP”, 真, 真)
+            .如果结束
+            发送数据 (封装数据 (“GETIP”, 加密秘钥))
+            延迟 (5000)
+            .如果真 (取数组成员数 (队友IP) ＜ 1)
+                延迟 (5000)
+            .如果真结束
+            .如果真 (取数组成员数 (队友IP) ＜ 1)
+                .如果 (是否中文系统)
+                    输出文本 (“无法获取到对方IP，请确保对方已打开本软件并加入同一房间内”, 真, 真)
+                .否则
+                    输出文本 (“Unable to get the other party's IP, please make sure that the other party has opened the software and connected to the same server.”, 真, 真)
+                .如果结束
+
+            .如果真结束
+
+        .如果真结束
+        剪辑版添加数量 ＝ 添加队友IP (取剪辑板文本 ())
+        .如果真 (剪辑版添加数量 ≠ 0)
+            .如果 (是否中文系统)
+                输出文本 (“从剪辑版中获取到” ＋ 到文本 (剪辑版添加数量) ＋ “个IP，已添加到白名单”, 真, 真)
+            .否则
+                输出文本 (“Get ” ＋ 到文本 (剪辑版添加数量) ＋ “ IPs from the clipboard, added to the whitelist”, 真, 真)
+            .如果结束
+
+        .如果真结束
+        .如果 (是否中文系统)
+            输出文本 (“白名单列表中总共有” ＋ 到文本 (取数组成员数 (队友IP)) ＋ “个IP”, 真, 真)
+        .否则
+            输出文本 (“There are a total of ” ＋ 到文本 (取数组成员数 (队友IP)) ＋ “ IPs in the whitelist”, 真, 真)
+        .如果结束
+        .如果 (取数组成员数 (队友IP) ＝ 0)
+            运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=out profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes”, 假, 6)
+            运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=in profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes”, 假, 6)
+        .否则
+            .计次循环首 (取数组成员数 (队友IP), 已次数)
+                全部对方IP ＝ 全部对方IP ＋ 队友IP [已次数] ＋ #换行符
+            .计次循环尾 ()
+            运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=out profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes remoteip=” ＋ 避开IP计算 (全部对方IP), 假, 6)
+            运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号 ＋ “ dir=in profile=any localport=6672 remoteport=any protocol=UDP action=block enable=yes remoteip=” ＋ 避开IP计算 (全部对方IP), 假, 6)
+        .如果结束
         .如果 (是否中文系统)
             输出文本 (“已添加防火墙规则禁止战局连接”, 真, 真)
             按钮11.标题 ＝ 转换编码 (“恢复公开”)
+            输出文本 (“现在再加入GTA线上模式就可以了！”, 真, 真)
         .否则
             输出文本 (“Firewall rules have been added to prohibit war connection”, 真, 真)
             按钮11.标题 ＝ “recover”
+            输出文本 (“Now join GTA online!”, 真, 真)
         .如果结束
 
     .如果结束
@@ -2987,7 +3075,12 @@ ping时钟.时钟周期 ＝ 10000
     运行 (“netsh advfirewall firewall delete rule name=” ＋ #引号 ＋ “GTASuperESC Ka Dan Ren” ＋ #引号, 假, 6)
     .如果 (是否中文系统)
         输出文本 (“已删除相关防火墙规则”, 真, 真)
-        按钮11.标题 ＝ 转换编码 (“GTA卡单人”)
+        .如果 (选择框7.禁止 ＝ 真)
+            按钮11.标题 ＝ 转换编码 (“GTA卡单人”)
+        .否则
+            按钮11.标题 ＝ 转换编码 (“GTA锁单人”)
+        .如果结束
+
     .否则
         输出文本 (“Related firewall rules have been removed”, 真, 真)
         按钮11.标题 ＝ “Stuck single”
@@ -2995,6 +3088,151 @@ ping时钟.时钟周期 ＝ 10000
 
 .如果真结束
 
+
+.子程序 添加队友IP, 整数型
+.参数 队友的IP, 文本型
+.局部变量 当前全队友, 文本型
+.局部变量 全队友IP, 文本型, , "0"
+.局部变量 已次数, 整数型
+.局部变量 内循环, 整数型
+.局部变量 是否重复, 逻辑型
+.局部变量 成功添加数量, 整数型
+
+当前全队友 ＝ 队友的IP
+当前全队友 ＝ 文本_替换 (当前全队友, , , , “，”, #换行符, “,”, #换行符, “逗号”, #换行符, “：”, “:”, “ ”, #换行符)
+全队友IP ＝ 分割文本 (当前全队友, #换行符, )
+.计次循环首 (取数组成员数 (全队友IP), 已次数)
+    .如果真 (快速取出现次数 (全队友IP [已次数], “:”) ≠ 0)
+        全队友IP [已次数] ＝ 文本_取出中间文本 (“</?!@!?/>” ＋ 全队友IP [已次数], “</?!@!?/>”, “:”)
+    .如果真结束
+    .如果真 (是否为IPv4地址 (全队友IP [已次数]))
+        是否重复 ＝ 假
+        .计次循环首 (取数组成员数 (队友IP), 内循环)
+            .如果真 (队友IP [内循环] ＝ 全队友IP [已次数])
+                是否重复 ＝ 真
+                跳出循环 ()
+            .如果真结束
+
+        .计次循环尾 ()
+        .如果真 (全队友IP [已次数] ＝ 外网IP)
+            是否重复 ＝ 真
+        .如果真结束
+        .如果真 (是否重复 ＝ 假)
+            加入成员 (队友IP, 全队友IP [已次数])
+            成功添加数量 ＝ 成功添加数量 ＋ 1
+        .如果真结束
+
+    .如果真结束
+
+.计次循环尾 ()
+返回 (成功添加数量)
+
+.子程序 避开IP计算, 文本型, , 返回逗号分割
+.参数 IP地址, 文本型, , 换行符分割
+.局部变量 全部IP, 文本型, , "0"
+.局部变量 已次数, 整数型
+.局部变量 当前IP分开, 文本型, , "0"
+.局部变量 内循环, 整数型
+.局部变量 当前IP, 文本型
+.局部变量 避开IP, 文本型, , "0"
+.局部变量 全避开IP, 文本型
+
+全部IP ＝ 分割文本 (文本_去重复文本 (IP地址, #换行符), #换行符, )
+.计次循环首 (取数组成员数 (全部IP), 已次数)  ' 填充1.1.1.1为001.001.001.001，然后使用文本排序
+    清除数组 (当前IP分开)
+    当前IP ＝ “”
+    当前IP分开 ＝ 分割文本 (全部IP [已次数], “.”, )
+    .计次循环首 (4, 内循环)
+        当前IP ＝ 当前IP ＋ 补0 (到整数 (当前IP分开 [内循环]), 3)
+        .如果真 (内循环 ＜ 4)
+            当前IP ＝ 当前IP ＋ “.”
+        .如果真结束
+
+    .计次循环尾 ()
+    全部IP [已次数] ＝ 当前IP
+.计次循环尾 ()
+数组_排序 (全部IP, 0, )
+.计次循环首 (取数组成员数 (全部IP), 已次数)  ' 排序完之后弄回去
+    清除数组 (当前IP分开)
+    当前IP ＝ “”
+    当前IP分开 ＝ 分割文本 (全部IP [已次数], “.”, )
+    .计次循环首 (4, 内循环)
+        当前IP ＝ 当前IP ＋ 到文本 (到整数 (当前IP分开 [内循环]))
+        .如果真 (内循环 ＜ 4)
+            当前IP ＝ 当前IP ＋ “.”
+        .如果真结束
+
+    .计次循环尾 ()
+    全部IP [已次数] ＝ 当前IP
+.计次循环尾 ()
+重定义数组 (避开IP, 假, 取数组成员数 (全部IP) ＋ 1)
+.计次循环首 (取数组成员数 (避开IP), 已次数)
+    .判断开始 (已次数 ＝ 1)
+        避开IP [已次数] ＝ “0.0.0.0-” ＋ IP加减 (全部IP [已次数], -1)
+    .判断 (已次数 ＝ 取数组成员数 (避开IP))
+        避开IP [已次数] ＝ IP加减 (全部IP [已次数 － 1], 1) ＋ “-255.255.255.255”
+    .默认
+        避开IP [已次数] ＝ IP加减 (全部IP [已次数 － 1], 1) ＋ “-” ＋ IP加减 (全部IP [已次数], -1)
+    .判断结束
+    全避开IP ＝ 全避开IP ＋ 避开IP [已次数]
+    .如果真 (已次数 ≠ 取数组成员数 (避开IP))
+        全避开IP ＝ 全避开IP ＋ “,”
+    .如果真结束
+
+.计次循环尾 ()
+返回 (全避开IP)
+
+.子程序 IP加减, 文本型
+.参数 目标IP, 文本型
+.参数 加数字, 整数型, , 只能为1或-1
+.局部变量 已次数, 整数型
+.局部变量 当前IP分开, 文本型, , "0"
+.局部变量 当前IP整数, 整数型, , "4"
+.局部变量 当前次数, 整数型
+.局部变量 处理后IP, 文本型
+
+当前IP分开 ＝ 分割文本 (目标IP, “.”, )
+.计次循环首 (4, 已次数)
+    当前IP整数 [已次数] ＝ 到整数 (当前IP分开 [已次数])
+.计次循环尾 ()
+当前IP整数 [4] ＝ 当前IP整数 [4] ＋ 加数字
+.计次循环首 (4, 已次数)
+    当前次数 ＝ 5 － 已次数
+    .如果真 (当前IP整数 [当前次数] ＞ 255)
+        当前IP整数 [当前次数] ＝ 0
+        .如果真 (当前次数 ＞ 1)
+            当前IP整数 [当前次数 － 1] ＝ 当前IP整数 [当前次数 － 1] ＋ 1
+        .如果真结束
+
+    .如果真结束
+    .如果真 (当前IP整数 [当前次数] ＜ 0)
+        当前IP整数 [当前次数] ＝ 255
+        .如果真 (当前次数 ＞ 1)
+            当前IP整数 [当前次数 － 1] ＝ 当前IP整数 [当前次数 － 1] － 1
+        .如果真结束
+
+    .如果真结束
+
+.计次循环尾 ()
+.计次循环首 (4, 已次数)
+    处理后IP ＝ 处理后IP ＋ 到文本 (当前IP整数 [已次数])
+    .如果真 (已次数 ≠ 4)
+        处理后IP ＝ 处理后IP ＋ “.”
+    .如果真结束
+
+.计次循环尾 ()
+返回 (处理后IP)
+
+.子程序 补0, 文本型
+.参数 目标数字, 整数型
+.参数 目标位数, 整数型
+.局部变量 当前数字, 文本型
+
+当前数字 ＝ 到文本 (目标数字)
+.判断循环首 (取文本长度 (当前数字) ＜ 目标位数)
+    当前数字 ＝ “0” ＋ 当前数字
+.判断循环尾 ()
+返回 (当前数字)
 
 .子程序 卡单人线程
 .参数 是否全屏模式, 整数型
@@ -3880,6 +4118,7 @@ ws.Send (真, #OPCODE_TEXT, 真, 编码_Ansi到Utf8_2 (引号替换 (“{'type':
 .全局变量 全WS客户, WS客户, , "0"
 .全局变量 WS全客户数量, 整数型
 .全局变量 UDP许可证, 整数型
+.全局变量 队友IP, 文本型, , "0", 防火墙卡单人加白名单用的
 .版本 2
 .支持库 sock
 
