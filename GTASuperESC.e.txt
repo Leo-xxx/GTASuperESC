@@ -25,7 +25,7 @@
 
 .子程序 __启动窗口_创建完毕
 
-当前版本 ＝ 57
+当前版本 ＝ 58
 保存周期 ＝ 2000
 心跳包周期 ＝ 5000
 调试输出 (取系统语言 (), 取系统语言2 ())
@@ -149,7 +149,11 @@ GetProcessImageFileNameA (hp, name, 260)
     总测试次数 ＝ 总测试次数 ＋ 1
 .循环判断尾 (总测试次数 ＜ 16 且 到长整数 (时间_取现行时间戳 ()) － 全部开始时间 ＜ 11000)
 .计次循环首 (取数组成员数 (全WS服务器), 已次数)
-    输出文本 (“测试:” ＋ 全WS服务器 [已次数].服务器描述, 真, 真)
+    .如果 (是否中文系统)
+        输出文本 (“测试:” ＋ 全WS服务器 [已次数].服务器描述, 真, 真)
+    .否则
+        输出文本 (“test:” ＋ 全WS服务器 [已次数].服务器描述, 真, 真)
+    .如果结束
     最高延迟 ＝ 0
     最低延迟 ＝ 10000
     全部延迟 ＝ 0
@@ -331,8 +335,8 @@ GetProcessImageFileNameA (hp, name, 260)
     ' 标签6.标题 ＝ “Right click to run with administrator privile” ＋ #换行符 ＋ “ges to use the disable network card function.”
     标签6.标题 ＝ “Right click to run with administrator privileges to use the disable network card function.”
 .如果结束
-按钮11.标题 ＝ “Stuck single”
-按钮11.字体.字体大小 ＝ 7
+按钮11.标题 ＝ “Private Public”
+按钮11.字体.字体大小 ＝ 6
 按钮3.标题 ＝ “Introduction”
 按钮3.字体.字体大小 ＝ 7
 按钮5.标题 ＝ “Send”
@@ -766,6 +770,21 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
     .如果结束
 
 .如果真结束
+.如果真 (按钮3.禁止 ＝ 假)
+    .如果 (是否中文系统)
+        输出文本 (“添加到防火墙白名单：”, 真, 真)
+    .否则
+        输出文本 (“Add to firewall whitelist:”, 真, 真)
+    .如果结束
+    运行 (“netsh advfirewall firewall delete rule name=” ＋ #引号 ＋ 取执行文件名 () ＋ #引号, 假, 6)
+    运行 (“netsh advfirewall firewall add rule name=” ＋ #引号 ＋ “GTASuperESC Auto create server” ＋ #引号 ＋ “ dir=in program=” ＋ #引号 ＋ 取运行目录 () ＋ “\” ＋ 取执行文件名 () ＋ #引号 ＋ “ action=allow enable=yes”, 假, 1)
+    .如果 (是否中文系统)
+        输出文本 (“完成”, 假, 假)
+    .否则
+        输出文本 (“done”, 假, 假)
+    .如果结束
+
+.如果真结束
 .如果真 (外网IP ＝ “”)
     .如果 (是否中文系统)
         输出文本 (#换行符 ＋ “无法获取外网IP，无法自动创建房间，请确认您是否已联网”)
@@ -912,7 +931,12 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
         .如果 (是否为NATPMP)
             NATPMP创建映射 (网关IP, “UDP”, 26576, 创建端口, 3600)
             NATPMP时钟.时钟周期 ＝ 1200 × 1000
-            输出文本 (“已启用NAT-PMP自动续期”, 真, 真)
+            .如果 (是否中文系统)
+                输出文本 (“已启用NAT-PMP自动续期”, 真, 真)
+            .否则
+                输出文本 (“NAT-PMP auto-renew is enabled”, 真, 真)
+            .如果结束
+
         .否则
             创建结果 ＝ 创建upnp主线程 (创建端口, “UDP”, 26576, 内网IP, “GTASuperESC_” ＋ 到文本 (取随机数 (1000, 9999)), 1)
             .如果真 (创建结果 ≠ 1 且 创建结果 ≠ -1)
@@ -1685,7 +1709,6 @@ UDP数据报_创建 (26576)
     置剪辑板文本 (“Open GTASuperESC and enter the following number to connect:” ＋ #换行符 ＋ 房间号)
     输出文本 (#换行符 ＋ “The server has been successfully created automatically,” ＋ #换行符 ＋ “Intranet number: ” ＋ 内网房间号 ＋ #换行符 ＋ “Internet number: ” ＋ 房间号 ＋ #换行符 ＋ “Has been copied to the clip board, please do not publish it publicly, in case the game is closed by others in the middle of the game.”)
 .如果结束
-
 编辑框2.内容 ＝ 房间号
 心跳包.时钟周期 ＝ 2000
 UDP超时检测.时钟周期 ＝ 1000
@@ -1765,7 +1788,11 @@ UDP数据报.关闭 ()
     加密秘钥 ＝ 生成随机密码 (32)
 .如果结束
 公网房间号 ＝ “?” ＋ 当前ID ＋ “!” ＋ 加密秘钥
-编辑框1.内容 ＝ 转换编码 (“输出内容：”)
+.如果 (是否中文系统)
+    编辑框1.内容 ＝ 转换编码 (“输出内容：”)
+.否则
+    编辑框1.内容 ＝ “Output content:”
+.如果结束
 处理事件 ()
 .如果 (WS创建连接 ())
     .如果 (是否中文系统)
@@ -2978,7 +3005,7 @@ ping时钟.时钟周期 ＝ 10000
 .局部变量 已次数, 整数型
 .局部变量 剪辑版添加数量, 整数型
 
-.如果真 (按钮11.标题 ＝ 转换编码 (“GTA锁单人”) 或 按钮11.标题 ＝ 转换编码 (“GTA卡单人”) 或 按钮11.标题 ＝ “Stuck single”)
+.如果真 (按钮11.标题 ＝ 转换编码 (“GTA锁单人”) 或 按钮11.标题 ＝ 转换编码 (“GTA卡单人”) 或 按钮11.标题 ＝ “Private Public”)
     .如果 (选择框3.禁止 ＝ 真)
         .如果 (是否中文系统)
             信息框返回 ＝ 信息框 (转换编码 (“当前使用卡单人，如需使用防火墙规则” ＋ #换行符 ＋ “锁单人请右键以管理员身份运行本软件” ＋ #换行符 ＋ “原理：暂停GTA进程10秒后恢复” ＋ #换行符 ＋ “GTA5是运行在窗口模式吗？” ＋ #换行符 ＋ “窗口点是 全屏点否”), #取消是否钮 ＋ #询问图标, 转换编码 (“GTA5卡单人公开战局”), _启动窗口)
@@ -3008,7 +3035,7 @@ ping时钟.时钟周期 ＝ 10000
             输出文本 (“2.用本软件最新版联机后再锁单人(可能不支持加速器)”, 假, 真)
             输出文本 (“(加速器是指的对方开的,没测试过自己开加速器锁单人)”, 假, 真)
         .否则
-            输出文本 (“Add a whitelist to let friends come in two ways: 1. Copy the other party's IP and then click stuck single (multiple IPs are separated by a newline or comma); 2. The other party uses the software to connect with you and then click single”, 真, 真)
+            输出文本 (“Add a whitelist to let friends come in two ways: 1. Copy the other party's IP and then click private public (multiple IPs are separated by a newline or comma); 2. The other party uses the software to connect with you and then click single”, 真, 真)
         .如果结束
         .如果真 (按钮2.禁止 ＝ 真)
             .如果真 (外网IP ＝ “”)
@@ -3083,7 +3110,7 @@ ping时钟.时钟周期 ＝ 10000
 
     .否则
         输出文本 (“Related firewall rules have been removed”, 真, 真)
-        按钮11.标题 ＝ “Stuck single”
+        按钮11.标题 ＝ “Private Public”
     .如果结束
 
 .如果真结束
