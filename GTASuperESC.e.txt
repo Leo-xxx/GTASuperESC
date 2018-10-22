@@ -770,7 +770,7 @@ _启动窗口.标题 ＝ “GTASuperESCv” ＋ 到文本 (当前版本 ÷ 10) �
     .如果结束
 
 .如果真结束
-.如果真 (按钮3.禁止 ＝ 假)
+.如果真 (选择框3.禁止 ＝ 假)
     .如果 (是否中文系统)
         输出文本 (“添加到防火墙白名单：”, 真, 真)
     .否则
@@ -3035,7 +3035,7 @@ ping时钟.时钟周期 ＝ 10000
             输出文本 (“2.用本软件最新版联机后再锁单人(可能不支持加速器)”, 假, 真)
             输出文本 (“(加速器是指的对方开的,没测试过自己开加速器锁单人)”, 假, 真)
         .否则
-            输出文本 (“Add a whitelist to let friends come in two ways: 1. Copy the other party's IP and then click private public (multiple IPs are separated by a newline or comma); 2. The other party uses the software to connect with you and then click single”, 真, 真)
+            输出文本 (“Add a whitelist to let friends come in two ways: 1. Copy the other party's IP and then click private public (multiple IPs are separated by a newline or comma); 2. The other party uses the software to connect with you and then click private public”, 真, 真)
         .如果结束
         .如果真 (按钮2.禁止 ＝ 真)
             .如果真 (外网IP ＝ “”)
