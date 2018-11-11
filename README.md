@@ -21,6 +21,7 @@ The main function of this software is that after multiple people open the softwa
 GTA Online has a Criminal Mastermind challenge, you can get 10 million after passing!  
 Criminal Mastermind: Only professional need apply. This is the ultimate challenge. Complete all 5 Heists in full on hard difficulte, in order, with the same team and with out losing a single life.  
 The whole process can't die, which makes this challenge difficult, but if you use this software, when someone dies, press the button quickly, and the person who opens the software will close the game together! As long as four people turn off the game before saving the data, the progress of the challenge will not be reset!  
+The software can also be used elsewhere, and the name of the process to be terminated can be modified.  
   
 ## How to use to do Criminal Mastermind:  
 - Open the software and click on "Auto create"  
