@@ -23,12 +23,12 @@ Criminal Mastermind: Only professional need apply. This is the ultimate challeng
 The whole process can't die, which makes this challenge difficult, but if you use this software, when someone dies, press the button quickly, and the person who opens the software will close the game together! As long as four people turn off the game before saving the data, the progress of the challenge will not be reset!  
   
 ## How to use to do Criminal Mastermind:  
-1. Open the software and click on "Auto create"  
+- Open the software and click on "Auto create"  
 - (If create fails, please try to get teammates to click "Auto create", if he also fails, please click "Use free server")  
-2. Copy the given number and send it to your teammates  
-3. Let teammates open the software, enter the number and connect  
+- Copy the given number and send it to your teammates  
+- Let teammates open the software, enter the number and connect  
 - Done! At this point, any person presses the hotkey and multiple people will quickly close the game together.  
-4. When someone dies, immediately press the shortcut key, then re-open the game to continue to do the Criminal Mastermind  
+- When someone dies, immediately press the shortcut key, then re-open the game to continue to do the Criminal Mastermind  
   
   
 This software has multiple online methods. If one of the teams is a public network IPv4 address, you can use the automatic creation server. The software will automatically establish port mapping through NAT-PMP or UPnP and automatically test whether it is really valid, and then give a number. Others can easily connect by entering this number. The data is transmitted by TCP+UDP or by TCP or UDP.  
